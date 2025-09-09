@@ -405,24 +405,18 @@
                              console.log('权限请求结果:', response);
                              if (response === 'granted') {
                                  startGyroscope();
-                                 showMessage('陀螺仪已启用！倾斜手机试试看', 'success');
-                             } else {
-                                 showMessage('陀螺仪权限被拒绝，请在设置中允许', 'error');
                              }
                          })
                          .catch(error => {
                              console.error('权限请求失败:', error);
-                             showMessage('权限请求失败: ' + error.message, 'error');
                          });
                  } else {
                      // 对于不需要权限的设备（Android等）
                      console.log('检测到Android设备，直接启用陀螺仪...');
                      startGyroscope();
-                     showMessage('陀螺仪已启用！倾斜手机试试看', 'success');
                  }
              } else {
                  console.log('设备不支持陀螺仪');
-                 showMessage('您的设备不支持陀螺仪功能', 'error');
              }
          }
         
@@ -480,7 +474,6 @@
                      initialAlpha = alpha || 0;
                      isCalibrated = true;
                      console.log('陀螺仪已校准，初始角度:', { initialBeta, initialGamma, initialAlpha });
-                     showMessage('陀螺仪已校准到当前角度', 'success');
                      return; // 跳过第一次，避免突然跳跃
                  }
                  
@@ -549,9 +542,8 @@
              setTimeout(() => {
                  if (!dataReceived) {
                      console.log('2秒内未收到陀螺仪数据');
-                     showMessage('陀螺仪可能不工作，请检查浏览器设置', 'error');
                  } else {
-                     showMessage('陀螺仪工作正常！享受丝滑体验', 'success');
+                     console.log('陀螺仪工作正常');
                  }
              }, 2000);
          }
@@ -599,42 +591,9 @@
              }, 3000);
          }
          
-         // 添加点击启用陀螺仪的功能
+         // 自动启用陀螺仪功能
          if (isMobileDevice()) {
-             // 创建启用按钮
-             const enableButton = document.createElement('button');
-             enableButton.textContent = '🌟 启用陀螺仪效果';
-             enableButton.style.cssText = `
-                 position: fixed;
-                 top: 20px;
-                 left: 50%;
-                 transform: translateX(-50%);
-                 padding: 12px 24px;
-                 background: linear-gradient(135deg, #FFD700, #FFA500);
-                 color: #333;
-                 border: none;
-                 border-radius: 25px;
-                 font-size: 16px;
-                 font-weight: bold;
-                 cursor: pointer;
-                 z-index: 1000;
-                 box-shadow: 0 4px 15px rgba(255,215,0,0.4);
-                 transition: all 0.3s ease;
-             `;
-             
-             enableButton.addEventListener('click', () => {
-                 console.log('用户点击了陀螺仪按钮');
-                 enableButton.textContent = '⏳ 启用中...';
-                 enableButton.style.background = 'linear-gradient(135deg, #ccc, #999)';
-                 enableGyroscope();
-                 
-                 // 延迟隐藏按钮，给用户时间看到反馈
-                 setTimeout(() => {
-                     enableButton.style.display = 'none';
-                 }, 2000);
-             });
-             
-             document.body.appendChild(enableButton);
+             enableGyroscope();
          }
         
 
