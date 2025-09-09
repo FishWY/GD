@@ -441,6 +441,12 @@
              // 减小死区设置
              const deadZone = 1;
              
+             // 初始角度校准
+             let initialBeta = null;
+             let initialGamma = null;
+             let initialAlpha = null;
+             let isCalibrated = false;
+             
              // 性能优化：限制更新频率
              let lastUpdate = 0;
              const updateInterval = 16; // 约60fps
@@ -467,6 +473,27 @@
                      return;
                  }
                  
+                 // 初始角度校准 - 以第一次接收到的角度为基准
+                 if (!isCalibrated) {
+                     initialBeta = beta;
+                     initialGamma = gamma;
+                     initialAlpha = alpha || 0;
+                     isCalibrated = true;
+                     console.log('陀螺仪已校准，初始角度:', { initialBeta, initialGamma, initialAlpha });
+                     showMessage('陀螺仪已校准到当前角度', 'success');
+                     return; // 跳过第一次，避免突然跳跃
+                 }
+                 
+                 // 计算相对于初始角度的变化
+                 beta = beta - initialBeta;
+                 gamma = gamma - initialGamma;
+                 if (alpha !== null && alpha !== undefined) {
+                     alpha = alpha - initialAlpha;
+                     // 处理角度跨越边界的情况
+                     if (alpha > 180) alpha -= 360;
+                     if (alpha < -180) alpha += 360;
+                 }
+                 
                  // 应用死区，避免微小抖动
                  if (Math.abs(beta) < deadZone) beta = 0;
                  if (Math.abs(gamma) < deadZone) gamma = 0;
@@ -475,12 +502,8 @@
                  smoothBeta = smoothBeta * (1 - smoothFactor) + beta * smoothFactor;
                  smoothGamma = smoothGamma * (1 - smoothFactor) + gamma * smoothFactor;
                  
-                 // 添加Z轴旋转的微妙效果
+                 // Z轴旋转处理
                  let smoothAlpha = alpha || 0;
-                 if (alpha !== null && alpha !== undefined) {
-                     // 将0-360度转换为-180到180度
-                     if (smoothAlpha > 180) smoothAlpha -= 360;
-                 }
                  
                  // 使用requestAnimationFrame优化性能
                  if (!pendingUpdate) {
