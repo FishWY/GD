@@ -642,20 +642,9 @@
          
          // 背景音乐功能
          function initBackgroundMusic() {
-             const audio = document.createElement('audio');
-             audio.loop = true;
-             audio.volume = 0.3;
-             audio.preload = 'auto';
+             console.log('初始化背景音乐功能...');
              
-             // 添加音频源
-             const source1 = document.createElement('source');
-             source1.src = 'birthday-music.mp3';
-             source1.type = 'audio/mpeg';
-             
-             audio.appendChild(source1);
-             document.body.appendChild(audio);
-             
-             // 创建音乐控制按钮
+             // 创建音乐控制按钮（无论音频是否加载成功都显示）
              const musicBtn = document.createElement('button');
              musicBtn.innerHTML = '🎵';
              musicBtn.style.cssText = `
@@ -675,25 +664,64 @@
                  transition: all 0.3s ease;
              `;
              
-             let isPlaying = false;
+             // 立即添加按钮到页面
+             document.body.appendChild(musicBtn);
+             console.log('音乐按钮已添加到页面');
              
+             // 创建音频元素
+             const audio = document.createElement('audio');
+             audio.loop = true;
+             audio.volume = 0.3;
+             audio.preload = 'auto';
+             
+             // 添加音频源
+             const source1 = document.createElement('source');
+             source1.src = 'birthday-music.mp3';
+             source1.type = 'audio/mpeg';
+             
+             audio.appendChild(source1);
+             document.body.appendChild(audio);
+             
+             let isPlaying = false;
+             let audioReady = false;
+             
+             // 音频加载成功事件
+             audio.addEventListener('canplaythrough', () => {
+                 console.log('音频文件加载成功');
+                 audioReady = true;
+             });
+             
+             // 音频加载错误事件
+             audio.addEventListener('error', (e) => {
+                 console.log('音频加载失败:', e);
+                 console.log('但音乐按钮仍然可见');
+                 audioReady = false;
+             });
+             
+             // 按钮点击事件
              musicBtn.addEventListener('click', () => {
+                 console.log('音乐按钮被点击，当前状态:', isPlaying);
+                 
                  if (isPlaying) {
                      audio.pause();
                      musicBtn.innerHTML = '🎵';
                      musicBtn.style.opacity = '0.6';
                      isPlaying = false;
+                     console.log('音乐已暂停');
                  } else {
                      audio.play().then(() => {
                          musicBtn.innerHTML = '🎶';
                          musicBtn.style.opacity = '1';
                          isPlaying = true;
+                         console.log('音乐开始播放');
                      }).catch(e => {
                          console.log('音频播放失败:', e);
+                         alert('音频播放失败，请检查文件是否存在');
                      });
                  }
              });
              
+             // 鼠标悬停效果
              musicBtn.addEventListener('mouseenter', () => {
                  musicBtn.style.transform = 'scale(1.1)';
              });
@@ -702,18 +730,19 @@
                  musicBtn.style.transform = 'scale(1)';
              });
              
-             document.body.appendChild(musicBtn);
-             
-             // 尝试自动播放（可能被浏览器阻止）
+             // 尝试自动播放（延迟更长时间）
              setTimeout(() => {
+                 console.log('尝试自动播放音乐...');
                  audio.play().then(() => {
                      musicBtn.innerHTML = '🎶';
+                     musicBtn.style.opacity = '1';
                      isPlaying = true;
                      console.log('背景音乐自动播放成功');
-                 }).catch(() => {
-                     console.log('自动播放被阻止，需要用户手动点击');
+                 }).catch((e) => {
+                     console.log('自动播放被阻止或失败:', e);
+                     console.log('用户需要手动点击按钮播放');
                  });
-             }, 1000);
+             }, 2000);
          }
          
          // 页面加载完成后的初始化
