@@ -41,12 +41,84 @@
             transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
             cursor: pointer;
         }
+        
+        .card {
+            --light-x: 50%;
+            --light-y: 30%;
+            --light-intensity: 0.18;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(
+                    ellipse 600px 400px at var(--light-x) var(--light-y),
+                    rgba(255, 255, 255, var(--light-intensity)) 0%,
+                    rgba(255, 255, 255, calc(var(--light-intensity) * 0.7)) 30%,
+                    rgba(255, 255, 255, calc(var(--light-intensity) * 0.3)) 60%,
+                    transparent 80%
+                ),
+                linear-gradient(
+                    135deg,
+                    rgba(255, 255, 255, 0.02) 0%,
+                    transparent 30%,
+                    transparent 70%,
+                    rgba(0, 0, 0, 0.01) 100%
+                );
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 20px;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 215, 0, 0.05) 0%,
+                transparent 20%,
+                transparent 80%,
+                rgba(0, 0, 0, 0.03) 100%
+            );
+            pointer-events: none;
+            z-index: 2;
+            border-radius: 20px;
+        }
+        
+        /* 微妙的边缘效果 */
+        .card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 优化阴影层次 */
+        .card {
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 10px 20px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+        }
 
         .card:hover {
             transform: rotateY(5deg) rotateX(5deg) translateZ(20px);
             box-shadow: 
                 0 30px 60px rgba(0, 0, 0, 0.4),
                 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+        
+        .card:hover {
+            --light-intensity: 0.3;
         }
 
         .card-header {
@@ -184,6 +256,10 @@
             animation: pulse 3s ease-in-out infinite;
         }
 
+
+        
+
+        
         /* 响应式设计 */
         @media (max-width: 480px) {
             .card {
@@ -199,6 +275,8 @@
             .card-content {
                 padding: 30px 20px;
             }
+            
+
         }
     </style>
 </head>
@@ -220,6 +298,8 @@
                     嗯… 这样差不多了吧？
                 </div>
                 
+
+                
                 <div class="daisy-decoration">
                     <div class="daisy">
                         <div class="petal"></div>
@@ -234,7 +314,7 @@
                 </div>
                 
                 <div class="accent-line"></div>
-                <div class="gd-signature">G-DRAGON</div>
+                <div class="gd-signature">G-DRAGON STYLE</div>
             </div>
         </div>
     </div>
@@ -243,6 +323,34 @@
         // 添加交互效果
         const card = document.querySelector('.card');
         let isGyroscopeActive = false;
+        
+        // 更新光源位置和强度
+        function updateLightSource(x, y, intensity = null) {
+            const lightX = (x / card.offsetWidth) * 100;
+            const lightY = (y / card.offsetHeight) * 100;
+            
+            // 平滑更新光源位置
+            card.style.setProperty('--light-x', lightX + '%');
+            card.style.setProperty('--light-y', lightY + '%');
+            
+            // 根据鼠标距离中心的距离调整光源强度
+            if (intensity === null) {
+                const centerX = 50;
+                const centerY = 50;
+                const distance = Math.sqrt(
+                    Math.pow(lightX - centerX, 2) + Math.pow(lightY - centerY, 2)
+                );
+                
+                // 距离越近，反光越强
+                const maxDistance = 60; // 最大距离
+                const normalizedDistance = Math.min(distance / maxDistance, 1);
+                const calculatedIntensity = 0.12 + (0.25 * (1 - normalizedDistance));
+                
+                card.style.setProperty('--light-intensity', calculatedIntensity);
+            } else {
+                card.style.setProperty('--light-intensity', intensity);
+            }
+        }
         
         // 鼠标交互效果
         card.addEventListener('mousemove', (e) => {
@@ -259,97 +367,241 @@
             const rotateY = (centerX - x) / 10;
             
             card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+            
+            // 更新光源位置
+            updateLightSource(x, y);
         });
         
         card.addEventListener('mouseleave', () => {
             if (!isGyroscopeActive) {
                 card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+                // 重置光源到默认位置和强度
+                card.style.setProperty('--light-x', '50%');
+                card.style.setProperty('--light-y', '30%');
+                card.style.setProperty('--light-intensity', '0.18');
             }
         });
         
         // 陀螺仪功能
-        function enableGyroscope() {
-            if (typeof DeviceOrientationEvent !== 'undefined') {
-                // 检查是否需要请求权限（iOS 13+）
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(response => {
-                            if (response === 'granted') {
-                                startGyroscope();
-                            } else {
-                                console.log('陀螺仪权限被拒绝');
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // 对于不需要权限的设备
-                    startGyroscope();
-                }
-            } else {
-                console.log('设备不支持陀螺仪');
-            }
-        }
+         function enableGyroscope() {
+             console.log('尝试启用陀螺仪...');
+             
+             if (typeof DeviceOrientationEvent !== 'undefined') {
+                 // 检查是否需要请求权限（iOS 13+）
+                 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                     console.log('检测到iOS设备，请求权限...');
+                     DeviceOrientationEvent.requestPermission()
+                         .then(response => {
+                             console.log('权限请求结果:', response);
+                             if (response === 'granted') {
+                                 startGyroscope();
+                                 showMessage('陀螺仪已启用！倾斜手机试试看', 'success');
+                             } else {
+                                 showMessage('陀螺仪权限被拒绝，请在设置中允许', 'error');
+                             }
+                         })
+                         .catch(error => {
+                             console.error('权限请求失败:', error);
+                             showMessage('权限请求失败: ' + error.message, 'error');
+                         });
+                 } else {
+                     // 对于不需要权限的设备（Android等）
+                     console.log('检测到Android设备，直接启用陀螺仪...');
+                     startGyroscope();
+                     showMessage('陀螺仪已启用！倾斜手机试试看', 'success');
+                 }
+             } else {
+                 console.log('设备不支持陀螺仪');
+                 showMessage('您的设备不支持陀螺仪功能', 'error');
+             }
+         }
         
         function startGyroscope() {
-            isGyroscopeActive = true;
-            
-            window.addEventListener('deviceorientation', (event) => {
-                // 获取设备方向数据
-                const beta = event.beta;   // X轴旋转 (-180 到 180)
-                const gamma = event.gamma; // Y轴旋转 (-90 到 90)
-                
-                // 限制旋转角度范围，避免过度旋转
-                const maxTilt = 60;
-                const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 3));
-                const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 2));
-                
-                // 应用3D变换
-                card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
-            });
-        }
+             console.log('开始启动陀螺仪监听...');
+             isGyroscopeActive = true;
+             
+             // 测试陀螺仪数据
+             let dataReceived = false;
+             
+             const orientationHandler = (event) => {
+                 if (!dataReceived) {
+                     console.log('首次接收到陀螺仪数据:', event);
+                     dataReceived = true;
+                 }
+                 
+                 // 获取设备方向数据
+                 const beta = event.beta;   // X轴旋转 (-180 到 180)
+                 const gamma = event.gamma; // Y轴旋转 (-90 到 90)
+                 
+                 // 检查数据有效性
+                 if (beta === null || gamma === null) {
+                     console.log('陀螺仪数据无效:', { beta, gamma });
+                     return;
+                 }
+                 
+                 // 限制旋转角度范围，避免过度旋转
+                 const maxTilt = 30;
+                 const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 3));
+                 const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 2));
+                 
+                 // 应用3D变换
+                  card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+                  
+                  // 根据陀螺仪数据更新光源位置
+                  const lightXPercent = Math.max(10, Math.min(90, 50 + (rotateY * 1.5)));
+                  const lightYPercent = Math.max(10, Math.min(90, 50 + (rotateX * 1.5)));
+                  
+                  // 计算光源强度（倾斜越大，反光越明显）
+                   const tiltIntensity = Math.min(0.45, 0.18 + (Math.abs(rotateX) + Math.abs(rotateY)) * 0.01);
+                  
+                  card.style.setProperty('--light-x', lightXPercent + '%');
+                  card.style.setProperty('--light-y', lightYPercent + '%');
+                  card.style.setProperty('--light-intensity', tiltIntensity);
+             };
+             
+             window.addEventListener('deviceorientation', orientationHandler);
+             
+             // 5秒后检查是否收到数据
+             setTimeout(() => {
+                 if (!dataReceived) {
+                     console.log('5秒内未收到陀螺仪数据');
+                     showMessage('陀螺仪可能不工作，请检查浏览器设置', 'error');
+                 }
+             }, 5000);
+         }
         
         // 检测移动设备并自动启用陀螺仪
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
         
-        // 添加点击启用陀螺仪的功能
-        if (isMobileDevice()) {
-            // 创建启用按钮
-            const enableButton = document.createElement('button');
-            enableButton.textContent = '启用陀螺仪效果';
-            enableButton.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                padding: 10px 20px;
-                background: linear-gradient(135deg, #000000, #333333);
-                color: white;
-                border: none;
-                border-radius: 25px;
-                font-size: 14px;
-                cursor: pointer;
-                z-index: 1000;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                transition: all 0.3s ease;
-            `;
-            
-            enableButton.addEventListener('click', () => {
-                enableGyroscope();
-                enableButton.style.display = 'none';
-            });
-            
-            document.body.appendChild(enableButton);
-        }
+        // 消息提示函数
+         function showMessage(text, type = 'info') {
+             const message = document.createElement('div');
+             message.textContent = text;
+             message.style.cssText = `
+                 position: fixed;
+                 top: 80px;
+                 left: 50%;
+                 transform: translateX(-50%);
+                 padding: 12px 24px;
+                 background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                            type === 'error' ? 'linear-gradient(135deg, #f44336, #da190b)' : 
+                            'linear-gradient(135deg, #2196F3, #0b7dda)'};
+                 color: white;
+                 border-radius: 25px;
+                 font-size: 14px;
+                 z-index: 1001;
+                 box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                 transition: all 0.3s ease;
+                 max-width: 300px;
+                 text-align: center;
+             `;
+             
+             document.body.appendChild(message);
+             
+             // 3秒后自动消失
+             setTimeout(() => {
+                 if (message.parentNode) {
+                     message.style.opacity = '0';
+                     setTimeout(() => {
+                         if (message.parentNode) {
+                             document.body.removeChild(message);
+                         }
+                     }, 300);
+                 }
+             }, 3000);
+         }
+         
+         // 添加点击启用陀螺仪的功能
+         if (isMobileDevice()) {
+             // 创建启用按钮
+             const enableButton = document.createElement('button');
+             enableButton.textContent = '🌟 启用陀螺仪效果';
+             enableButton.style.cssText = `
+                 position: fixed;
+                 top: 20px;
+                 left: 50%;
+                 transform: translateX(-50%);
+                 padding: 12px 24px;
+                 background: linear-gradient(135deg, #FFD700, #FFA500);
+                 color: #333;
+                 border: none;
+                 border-radius: 25px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 cursor: pointer;
+                 z-index: 1000;
+                 box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+                 transition: all 0.3s ease;
+             `;
+             
+             enableButton.addEventListener('click', () => {
+                 console.log('用户点击了陀螺仪按钮');
+                 enableButton.textContent = '⏳ 启用中...';
+                 enableButton.style.background = 'linear-gradient(135deg, #ccc, #999)';
+                 enableGyroscope();
+                 
+                 // 延迟隐藏按钮，给用户时间看到反馈
+                 setTimeout(() => {
+                     enableButton.style.display = 'none';
+                 }, 2000);
+             });
+             
+             document.body.appendChild(enableButton);
+         }
         
-        // 页面加载完成后的初始化
-        window.addEventListener('load', () => {
-            // 如果是移动设备，显示提示
-            if (isMobileDevice()) {
-                console.log('移动设备检测到，可以使用陀螺仪功能');
-            }
-        });
+
+         
+         // 消息提示函数
+          function showMessage(text, type = 'info') {
+              const message = document.createElement('div');
+              message.textContent = text;
+              message.style.cssText = `
+                  position: fixed;
+                  top: 80px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  padding: 12px 24px;
+                  background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                             type === 'error' ? 'linear-gradient(135deg, #f44336, #da190b)' : 
+                             'linear-gradient(135deg, #2196F3, #0b7dda)'};
+                  color: white;
+                  border-radius: 25px;
+                  font-size: 14px;
+                  z-index: 1001;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                  transition: all 0.3s ease;
+                  max-width: 300px;
+                  text-align: center;
+              `;
+              
+              document.body.appendChild(message);
+              
+              // 3秒后自动消失
+              setTimeout(() => {
+                  if (message.parentNode) {
+                      message.style.opacity = '0';
+                      setTimeout(() => {
+                          if (message.parentNode) {
+                              document.body.removeChild(message);
+                          }
+                      }, 300);
+                  }
+              }, 3000);
+          }
+          
+
+         
+         // 页面加载完成后的初始化
+         window.addEventListener('load', () => {
+             // 如果是移动设备，显示提示
+             if (isMobileDevice()) {
+                 console.log('移动设备检测到，可以使用陀螺仪功能');
+             }
+             
+
+         });
     </script>
 </body>
 </html>
