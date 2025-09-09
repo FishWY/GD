@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Dragon Style Card</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            perspective: 1000px;
+            padding: 20px;
+        }
+
+        .card {
+            width: 400px;
+            height: 600px;
+            background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 50%, #ffffff 100%);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: rotateY(5deg) rotateX(5deg) translateZ(20px);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header {
+            height: 120px;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .peaceminusone-logo {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .daisy-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20% 30%, #ffffff 2px, transparent 2px),
+                radial-gradient(circle at 80% 70%, #ffffff 2px, transparent 2px),
+               radial-gradient(circle at 60% 20%, #ffffff 1.5px, transparent 1.5px),
+                radial-gradient(circle at 30% 80%, #ffffff 1.5px, transparent 1.5px);
+            background-size: 40px 40px, 35px 35px, 30px 30px, 45px 45px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .card-content {
+            padding: 40px 30px;
+            height: calc(100% - 120px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .text-content {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333333;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .daisy-decoration {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            top: 20px;
+            right: 20px;
+            opacity: 0.6;
+        }
+
+        .daisy {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .daisy::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FFD700;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .petal {
+            position: absolute;
+            width: 8px;
+            height: 25px;
+            background: #ffffff;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 100%;
+        }
+
+        .petal:nth-child(1) { transform: translate(-50%, -100%) rotate(0deg); }
+        .petal:nth-child(2) { transform: translate(-50%, -100%) rotate(45deg); }
+        .petal:nth-child(3) { transform: translate(-50%, -100%) rotate(90deg); }
+        .petal:nth-child(4) { transform: translate(-50%, -100%) rotate(135deg); }
+        .petal:nth-child(5) { transform: translate(-50%, -100%) rotate(180deg); }
+        .petal:nth-child(6) { transform: translate(-50%, -100%) rotate(225deg); }
+        .petal:nth-child(7) { transform: translate(-50%, -100%) rotate(270deg); }
+        .petal:nth-child(8) { transform: translate(-50%, -100%) rotate(315deg); }
+
+        .accent-line {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background: linear-gradient(90deg, #000000 0%, #FFD700 50%, #000000 100%);
+            border-radius: 1px;
+        }
+
+        .gd-signature {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 12px;
+            color: #666666;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .daisy-decoration {
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .card {
+                width: 350px;
+                height: 550px;
+            }
+            
+            .text-content {
+                font-size: 16px;
+                padding: 0 10px;
+            }
+            
+            .card-content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="peaceminusone-logo">PEACEMINUSONE</div>
+                <div class="daisy-pattern"></div>
+            </div>
+            
+            <div class="card-content">
+                <div class="text-content">
+                    黄科英吗？Happy Birthday！<br><br>
+                    我想起那段成都的回忆了… 2015年MADE巡演的时候，当时真的超火热的。<br><br>
+                    今天，希望你度过这世界上最闪亮的一天。<br><br>
+                    还有为你准备了这个录音的他。果然很有Sense呢。<br><br>
+                    希望你们俩今天都能成为最棒的一天。<br><br>
+                    嗯… 这样差不多了吧？
+                </div>
+                
+                <div class="daisy-decoration">
+                    <div class="daisy">
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                        <div class="petal"></div>
+                    </div>
+                </div>
+                
+                <div class="accent-line"></div>
+                <div class="gd-signature">G-DRAGON STYLE</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加交互效果
+        const card = document.querySelector('.card');
+        let isGyroscopeActive = false;
+        
+        // 鼠标交互效果
+        card.addEventListener('mousemove', (e) => {
+            if (isGyroscopeActive) return; // 如果陀螺仪激活，禁用鼠标效果
+            
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            if (!isGyroscopeActive) {
+                card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0px)';
+            }
+        });
+        
+        // 陀螺仪功能
+        function enableGyroscope() {
+            if (typeof DeviceOrientationEvent !== 'undefined') {
+                // 检查是否需要请求权限（iOS 13+）
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response === 'granted') {
+                                startGyroscope();
+                            } else {
+                                console.log('陀螺仪权限被拒绝');
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // 对于不需要权限的设备
+                    startGyroscope();
+                }
+            } else {
+                console.log('设备不支持陀螺仪');
+            }
+        }
+        
+        function startGyroscope() {
+            isGyroscopeActive = true;
+            
+            window.addEventListener('deviceorientation', (event) => {
+                // 获取设备方向数据
+                const beta = event.beta;   // X轴旋转 (-180 到 180)
+                const gamma = event.gamma; // Y轴旋转 (-90 到 90)
+                
+                // 限制旋转角度范围，避免过度旋转
+                const maxTilt = 30;
+                const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 3));
+                const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 2));
+                
+                // 应用3D变换
+                card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+            });
+        }
+        
+        // 检测移动设备并自动启用陀螺仪
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // 添加点击启用陀螺仪的功能
+        if (isMobileDevice()) {
+            // 创建启用按钮
+            const enableButton = document.createElement('button');
+            enableButton.textContent = '启用陀螺仪效果';
+            enableButton.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 10px 20px;
+                background: linear-gradient(135deg, #000000, #333333);
+                color: white;
+                border: none;
+                border-radius: 25px;
+                font-size: 14px;
+                cursor: pointer;
+                z-index: 1000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
+            `;
+            
+            enableButton.addEventListener('click', () => {
+                enableGyroscope();
+                enableButton.style.display = 'none';
+            });
+            
+            document.body.appendChild(enableButton);
+        }
+        
+        // 页面加载完成后的初始化
+        window.addEventListener('load', () => {
+            // 如果是移动设备，显示提示
+            if (isMobileDevice()) {
+                console.log('移动设备检测到，可以使用陀螺仪功能');
+            }
+        });
+    </script>
+</body>
+</html>
