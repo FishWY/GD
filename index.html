@@ -640,12 +640,91 @@
          
 
          
+         // 背景音乐功能
+         function initBackgroundMusic() {
+             const audio = document.createElement('audio');
+             audio.loop = true;
+             audio.volume = 0.3;
+             audio.preload = 'auto';
+             
+             // 添加音频源
+             const source1 = document.createElement('source');
+             source1.src = '0909 (1).MP3';
+             source1.type = 'audio/mpeg';
+             
+             audio.appendChild(source1);
+             document.body.appendChild(audio);
+             
+             // 创建音乐控制按钮
+             const musicBtn = document.createElement('button');
+             musicBtn.innerHTML = '🎵';
+             musicBtn.style.cssText = `
+                 position: fixed;
+                 bottom: 20px;
+                 right: 20px;
+                 width: 50px;
+                 height: 50px;
+                 border: none;
+                 border-radius: 50%;
+                 background: linear-gradient(135deg, #000000, #333333);
+                 color: #FFD700;
+                 font-size: 20px;
+                 cursor: pointer;
+                 z-index: 1000;
+                 box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                 transition: all 0.3s ease;
+             `;
+             
+             let isPlaying = false;
+             
+             musicBtn.addEventListener('click', () => {
+                 if (isPlaying) {
+                     audio.pause();
+                     musicBtn.innerHTML = '🎵';
+                     musicBtn.style.opacity = '0.6';
+                     isPlaying = false;
+                 } else {
+                     audio.play().then(() => {
+                         musicBtn.innerHTML = '🎶';
+                         musicBtn.style.opacity = '1';
+                         isPlaying = true;
+                     }).catch(e => {
+                         console.log('音频播放失败:', e);
+                     });
+                 }
+             });
+             
+             musicBtn.addEventListener('mouseenter', () => {
+                 musicBtn.style.transform = 'scale(1.1)';
+             });
+             
+             musicBtn.addEventListener('mouseleave', () => {
+                 musicBtn.style.transform = 'scale(1)';
+             });
+             
+             document.body.appendChild(musicBtn);
+             
+             // 尝试自动播放（可能被浏览器阻止）
+             setTimeout(() => {
+                 audio.play().then(() => {
+                     musicBtn.innerHTML = '🎶';
+                     isPlaying = true;
+                     console.log('背景音乐自动播放成功');
+                 }).catch(() => {
+                     console.log('自动播放被阻止，需要用户手动点击');
+                 });
+             }, 1000);
+         }
+         
          // 页面加载完成后的初始化
          window.addEventListener('load', () => {
              // 如果是移动设备，显示提示
              if (isMobileDevice()) {
                  console.log('移动设备检测到，可以使用陀螺仪功能');
              }
+             
+             // 初始化背景音乐
+             initBackgroundMusic();
          });
     </script>
 </body>
