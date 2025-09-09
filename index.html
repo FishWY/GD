@@ -423,6 +423,14 @@
              // 测试陀螺仪数据
              let dataReceived = false;
              
+             // 平滑过滤器
+             let smoothBeta = 0;
+             let smoothGamma = 0;
+             const smoothFactor = 0.1;
+             
+             // 死区设置
+             const deadZone = 3;
+             
              const orientationHandler = (event) => {
                  if (!dataReceived) {
                      console.log('首次接收到陀螺仪数据:', event);
@@ -430,8 +438,8 @@
                  }
                  
                  // 获取设备方向数据
-                 const beta = event.beta;   // X轴旋转 (-180 到 180)
-                 const gamma = event.gamma; // Y轴旋转 (-90 到 90)
+                 let beta = event.beta;   // X轴旋转 (-180 到 180)
+                 let gamma = event.gamma; // Y轴旋转 (-90 到 90)
                  
                  // 检查数据有效性
                  if (beta === null || gamma === null) {
@@ -439,20 +447,35 @@
                      return;
                  }
                  
-                 // 舒适的陀螺仪效果，平衡的双轴旋转
-                 const maxTilt = 20;
-                 const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 4));
-                 const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 3));
+                 // 应用死区，避免微小抖动
+                 if (Math.abs(beta) < deadZone) beta = 0;
+                 if (Math.abs(gamma) < deadZone) gamma = 0;
                  
-                 // 应用3D变换（适中的Z轴位移）
-                  card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+                 // 平滑过滤
+                 smoothBeta = smoothBeta * (1 - smoothFactor) + beta * smoothFactor;
+                 smoothGamma = smoothGamma * (1 - smoothFactor) + gamma * smoothFactor;
+                 
+                 // 优化的陀螺仪映射，更直观的控制
+                 const maxTilt = 15;
+                 
+                 // 使用平滑后的数据，并应用非线性映射
+                 let rotateX = Math.max(-maxTilt, Math.min(maxTilt, smoothBeta / 3));
+                 let rotateY = Math.max(-maxTilt, Math.min(maxTilt, smoothGamma / 2.5));
+                 
+                 // 非线性映射，小角度更敏感，大角度更平缓
+                 rotateX = Math.sign(rotateX) * Math.pow(Math.abs(rotateX) / maxTilt, 0.7) * maxTilt;
+                 rotateY = Math.sign(rotateY) * Math.pow(Math.abs(rotateY) / maxTilt, 0.7) * maxTilt;
+                 
+                 // 应用3D变换
+                  card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(15px)`;
                   
-                  // 根据陀螺仪数据更新光源位置（平衡的光源跟随）
-                  const lightXPercent = Math.max(15, Math.min(85, 50 + (rotateY * 2)));
-                  const lightYPercent = Math.max(15, Math.min(85, 50 + (rotateX * 2)));
+                  // 光源跟随优化
+                  const lightXPercent = Math.max(20, Math.min(80, 50 + (rotateY * 1.8)));
+                  const lightYPercent = Math.max(20, Math.min(80, 50 + (rotateX * 1.8)));
                   
-                  // 计算光源强度（适中的反光效果）
-                   const tiltIntensity = Math.min(0.4, 0.18 + (Math.abs(rotateX) + Math.abs(rotateY)) * 0.012);
+                  // 光源强度计算
+                   const tiltAmount = Math.sqrt(rotateX * rotateX + rotateY * rotateY);
+                   const tiltIntensity = Math.min(0.35, 0.18 + (tiltAmount / maxTilt) * 0.17);
                   
                   card.style.setProperty('--light-x', lightXPercent + '%');
                   card.style.setProperty('--light-y', lightYPercent + '%');
@@ -466,8 +489,10 @@
                  if (!dataReceived) {
                      console.log('5秒内未收到陀螺仪数据');
                      showMessage('陀螺仪可能不工作，请检查浏览器设置', 'error');
+                 } else {
+                     showMessage('陀螺仪工作正常！轻柔倾斜设备体验效果', 'success');
                  }
-             }, 5000);
+             }, 2000);
          }
         
         // 检测移动设备并自动启用陀螺仪
