@@ -460,6 +460,7 @@
                  // 获取设备方向数据
                  let beta = event.beta;   // X轴旋转 (-180 到 180)
                  let gamma = event.gamma; // Y轴旋转 (-90 到 90)
+                 let alpha = event.alpha; // Z轴旋转 (0 到 360)
                  
                  // 检查数据有效性
                  if (beta === null || gamma === null) {
@@ -474,27 +475,40 @@
                  smoothBeta = smoothBeta * (1 - smoothFactor) + beta * smoothFactor;
                  smoothGamma = smoothGamma * (1 - smoothFactor) + gamma * smoothFactor;
                  
+                 // 添加Z轴旋转的微妙效果
+                 let smoothAlpha = alpha || 0;
+                 if (alpha !== null && alpha !== undefined) {
+                     // 将0-360度转换为-180到180度
+                     if (smoothAlpha > 180) smoothAlpha -= 360;
+                 }
+                 
                  // 使用requestAnimationFrame优化性能
                  if (!pendingUpdate) {
                      pendingUpdate = true;
                      requestAnimationFrame(() => {
-                         // 快速响应的陀螺仪映射
-                         const maxTilt = 18;
+                         // 增强的陀螺仪映射，更接近电脑端体验
+                         const maxTilt = 25; // 增加最大倾斜角度
+                         const maxRotateZ = 8; // Z轴旋转范围
                          
-                         // 使用平滑后的数据，提高灵敏度
-                         let rotateX = Math.max(-maxTilt, Math.min(maxTilt, smoothBeta / 2));
-                         let rotateY = Math.max(-maxTilt, Math.min(maxTilt, smoothGamma / 1.8));
+                         // 使用平滑后的数据，增强灵敏度和范围
+                         let rotateX = Math.max(-maxTilt, Math.min(maxTilt, smoothBeta / 1.5));
+                         let rotateY = Math.max(-maxTilt, Math.min(maxTilt, smoothGamma / 1.3));
+                         let rotateZ = Math.max(-maxRotateZ, Math.min(maxRotateZ, smoothAlpha / 8));
                          
-                         // 应用3D变换
-                         card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(18px)`;
+                         // 添加复合旋转效果，模拟电脑端的自由度
+                         const complexRotateX = rotateX + (rotateY * 0.1); // Y轴影响X轴
+                         const complexRotateY = rotateY + (rotateX * 0.1); // X轴影响Y轴
                          
-                         // 增强光源跟随
-                         const lightXPercent = Math.max(15, Math.min(85, 50 + (rotateY * 2.2)));
-                         const lightYPercent = Math.max(15, Math.min(85, 50 + (rotateX * 2.2)));
+                         // 应用3D变换，包含Z轴旋转
+                         card.style.transform = `rotateX(${-complexRotateX}deg) rotateY(${complexRotateY}deg) rotateZ(${rotateZ}deg) translateZ(20px)`;
                          
-                         // 光源强度计算
-                         const tiltAmount = Math.sqrt(rotateX * rotateX + rotateY * rotateY);
-                         const tiltIntensity = Math.min(0.35, 0.18 + (tiltAmount / maxTilt) * 0.17);
+                         // 增强光源跟随，考虑Z轴影响
+                         const lightXPercent = Math.max(10, Math.min(90, 50 + (complexRotateY * 2.5) + (rotateZ * 0.5)));
+                         const lightYPercent = Math.max(10, Math.min(90, 50 + (complexRotateX * 2.5) + (rotateZ * 0.3)));
+                         
+                         // 光源强度计算，考虑三轴旋转
+                         const tiltAmount = Math.sqrt(complexRotateX * complexRotateX + complexRotateY * complexRotateY + rotateZ * rotateZ);
+                         const tiltIntensity = Math.min(0.4, 0.18 + (tiltAmount / maxTilt) * 0.22);
                          
                          card.style.setProperty('--light-x', lightXPercent + '%');
                          card.style.setProperty('--light-y', lightYPercent + '%');
