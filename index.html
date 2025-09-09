@@ -291,7 +291,7 @@
             <div class="card-content">
                 <div class="text-content">
                     黄科英，Happy Birthday！🎉<br><br>
-                    提起成都… 我想起来2015年MADE巡演的时候，当时真的超火热的。<br><br>
+                    提起成都… 我想起来2015年MADE巡演的时候，当时真的很热情的。<br><br>
                     今天，希望你度过这世界上最闪亮的一天。<br><br>
                     还有为你准备了这个录音的他，还是很有毅力的呢！<br><br>
                     希望今天都能成为你们俩最棒的一天。<br><br>
@@ -439,20 +439,20 @@
                      return;
                  }
                  
-                 // 限制旋转角度范围，避免过度旋转
-                 const maxTilt = 30;
-                 const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 3));
-                 const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 2));
+                 // 增加陀螺仪灵敏度，限制旋转角度范围
+                 const maxTilt = 25;
+                 const rotateX = Math.max(-maxTilt, Math.min(maxTilt, beta / 2));
+                 const rotateY = Math.max(-maxTilt, Math.min(maxTilt, gamma / 1.5));
                  
                  // 应用3D变换
                   card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
                   
-                  // 根据陀螺仪数据更新光源位置
-                  const lightXPercent = Math.max(10, Math.min(90, 50 + (rotateY * 1.5)));
-                  const lightYPercent = Math.max(10, Math.min(90, 50 + (rotateX * 1.5)));
+                  // 根据陀螺仪数据更新光源位置（增加灵敏度）
+                  const lightXPercent = Math.max(10, Math.min(90, 50 + (rotateY * 2.5)));
+                  const lightYPercent = Math.max(10, Math.min(90, 50 + (rotateX * 2.5)));
                   
                   // 计算光源强度（倾斜越大，反光越明显）
-                   const tiltIntensity = Math.min(0.45, 0.18 + (Math.abs(rotateX) + Math.abs(rotateY)) * 0.01);
+                   const tiltIntensity = Math.min(0.45, 0.18 + (Math.abs(rotateX) + Math.abs(rotateY)) * 0.015);
                   
                   card.style.setProperty('--light-x', lightXPercent + '%');
                   card.style.setProperty('--light-y', lightYPercent + '%');
@@ -593,14 +593,14 @@
           
 
          
+
+         
          // 页面加载完成后的初始化
          window.addEventListener('load', () => {
              // 如果是移动设备，显示提示
              if (isMobileDevice()) {
                  console.log('移动设备检测到，可以使用陀螺仪功能');
              }
-             
-
          });
     </script>
 </body>
